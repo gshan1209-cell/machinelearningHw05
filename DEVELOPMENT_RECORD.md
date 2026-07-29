@@ -1,87 +1,105 @@
-# 機器學習前十大演算法互動學習網站 - 開發紀錄 (Development Record)
+# AI Learning Portfolio｜開發紀錄 (Development Record)
 
-這份文件用於記錄專案的開發進度，並作為不同 AI Agent 之間的交接文件。下一個接手的 Agent 請優先閱讀此文件以了解目前進度。
+這份文件記錄專案開發進度，並作為 ChatGPT、Codex、Gemini、Antigravity、OpenCode 等 Agent 的交接文件。
 
-## 1. 專案總覽
-- **專案名稱**：機器學習前十大演算法互動學習網站 (ML Algorithm Tutor)
-- **技術架構**：Next.js (App Router), TypeScript, Tailwind CSS, React
-- **核心目標**：建立新手友善的機器學習演算法互動教學網站，包含 10 大演算法圖解、測驗與 AI 助理 (Live2D/Fallback)。
+## 中文摘要
 
-## 2. 目前開發進度 (Current Phase)
-**目前狀態：功能趨近完成，待整合與優化**
+- 原「機器學習前十大演算法互動學習網站」已確認作為 AI Learning Portfolio 的技術母體。
+- 原有十大演算法、收藏、進度、測驗與 AI 助教功能必須保留。
+- 已建立完整轉型規格、P0 任務與 Agent 開發規範。
+- 下一步由 Codex 執行 `ALP-P0-001`～`ALP-P0-005`，建立 Course Registry、教學頁與 Demo Adapter。
 
-✅ **已完成 (Done)**:
-1. **專案架構重構**：將專案從前後端分離重構為純 Next.js 應用，移除獨立的 Python 後端，並將所有 API 邏輯移轉至 Next.js API Routes。
-2. **核心內容與 API**：完成十大演算法的靜態資料 (`data/algorithms.json`) 與對應的 API (`/api/algorithms`)。
-3. **前端核心頁面**：完成首頁、演算法詳細頁、關於我們頁面。
-4. **核心元件**：完成演算法卡片、左側導覽列、搜尋框、進度條、視覺圖解等元件。
-5. **互動功能**：完成小測驗 (`QuizBlock`)、收藏 (`FavoriteButton`)、學習進度標記功能，並與 `localStorage` 連動。
-6. **AI 助理**：完成 AI 助理聊天介面 (`ChatAssistant`)，並透過 API Route 串接 OpenAI API。
-7. **UI/UX 現代化優化**：全面導入 Tailwind CSS，優化首頁、演算法內容頁及各項元件（包含卡片懸浮、測驗回饋、AI 助教動畫等）。
-8. **AI 協作環境**：建立 `AGENT.md` 與 `GEMINI.md`，統整多模型協作規範與指令。
-9. **收藏功能**：建立 `/favorites` 的專屬頁面，顯示從 `localStorage` 讀取出來的收藏演算法清單。
-10. **學習進度**：建立 `/progress` 頁面，讀取 `localStorage` 狀態並視覺化呈現學習進度與剩餘演算法。
-11. **綜合測驗**：建立 `/quiz` 頁面，從資料庫中隨機抽取測驗題，並提供即時的答題回饋與最終成績結算。
-12. **UI/UX 全站優化**：針對全站卡片、按鈕增加微互動動畫 (縮放、發光)、強化 Glassmorphism 毛玻璃特效與過渡動畫。
-13. **官方 Gemini SDK 整合**：更新專案與後端 `requirements.txt` 引入 `google-genai` 依賴，並將 `backend/chat.py` 重構為官方 Google GenAI SDK 的 `client.aio` (非同步) 呼叫方式，使用 `types.GenerateContentConfig` 傳入 `system_instruction` 與 `response_mime_type="application/json"`，完美適配 Gemini-2.5-flash 等最新模型。
+## 1. 專案定位
 
-❌ **待處理 (To-Do for Next Agent)**:
-1. **持續優化與擴充**：
-   - 增加更多進階演算法。
-   - 考慮加入使用者帳號系統 (若未來需取代 localStorage)。
+- **新名稱**：AI Learning Portfolio｜AI 學習作品集與教學網站
+- **原名稱**：ML Algorithm Tutor｜機器學習前十大演算法互動學習網站
+- **技術母體**：Next.js、TypeScript、Tailwind CSS、Next.js API Routes
+- **核心目標**：把分散的課程作業轉為新手友善、可操作、可測驗、可追溯原始碼的教學型作品集。
 
-## 3. 給下一個 Agent 的指示 (Prompt for Next Agent)
+## 2. 既有功能基線
 
-> **Hello Next Agent,**
-> 請根據本專案的 `Gemini_機器學習前十大演算法互動學習網站_開發規格書.md` 以及此 `DEVELOPMENT_RECORD.md` 繼續開發。
-> 
-> **你接下來的首要任務是：**
-> 1. 協助使用者配置 `.env` 檔案以輸入實際的 `GEMINI_API_KEY`，進行線上聊天對話測試。
-> 2. 確認系統目前功能是否已滿足所有需求，並協助使用者進行進一步的客製化或除錯。
-> 3. 開發完成後，請更新此 `DEVELOPMENT_RECORD.md` 的進度。
+以下功能不得在轉型過程退化：
 
----
-*最後更新時間：2026-06-09 (依賴更新與官方 Gemini SDK 整合上線)*
----
-
-## 2026-06-08 Refactor Update
-
-已將原本散落在 `hw5/` 根目錄的檔案重構為正式前後端專案：
-
-```text
-hw5/
-  backend/
-    main.py
-    algorithms.py
-    chat.py
-    data/algorithms.json
-    requirements.txt
-  frontend/
-    app/
-    components/
-    data/algorithms.json
-    lib/
-    package.json
-```
-
-目前可執行服務：
-
-- Backend: FastAPI, `http://127.0.0.1:8010`
-- Frontend: Next.js App Router, `http://localhost:3000`
-
-前端已完成：
-
-- 首頁演算法卡片
+- 十大機器學習演算法資料與教學頁
+- 首頁、演算法詳細頁、關於頁
 - 搜尋、分類與難度篩選
-- 演算法詳細頁
-- 簡單 SVG 視覺化
-- 收藏頁
-- localStorage 學習進度
-- AI 助教面板與 `/api/chat` proxy
+- 收藏與 `/favorites`
+- 學習進度與 `/progress`
+- 單課測驗與 `/quiz`
+- AI 助教與 API 串接 / fallback
+- RWD 與 Tailwind UI
 
-驗證紀錄：
+## 3. 2026-07-15｜AI Learning Portfolio 轉型啟動
 
-- `npm install` 完成
-- `npm audit` 回報 0 vulnerabilities
-- `npm run build` 通過
-- FastAPI `/api/algorithms/` 回傳 10 筆資料
+### 已完成
+
+- [x] 盤點 GitHub 帳號下的課程作業 Repository。
+- [x] 確認本 Repository 最適合作為教學平台母體。
+- [x] 建立分支 `feat/ai-learning-portfolio-platform`。
+- [x] 建立 `docs/specs/AI_Learning_Portfolio_SPEC_v1_0.md`。
+- [x] 建立 `docs/tasks/ALP-P0-001_to_005_platform_foundation.md`。
+- [x] 更新 `AGENT.md`，加入 P0 任務、驗收與禁止事項。
+
+### 來源 Repository 範圍
+
+1. `L2DOC1-github`
+2. `hw3-cosmos-text2image`
+3. `L4`
+4. `machinelearningHw05`
+5. `machinelearningHw6`
+6. `machinelearningHw6-2`
+7. `L12`
+8. `L13_SVM`
+9. `hw07`
+10. `cwa_scraper`
+11. `scrape_movie`
+12. `scrape_weather`
+13. `2026-DjangoBlog`
+14. `L20-Ensemble-Model`
+
+## 4. 目前進度
+
+**目前階段：P0 ready_for_development**
+
+### 待執行
+
+- [ ] `ALP-P0-001`：Course / Project / Demo Schema。
+- [ ] `ALP-P0-002`：14 個作業的 Registry。
+- [ ] `ALP-P0-003`：品牌、導航與首頁資訊架構。
+- [ ] `ALP-P0-004`：六段式教學頁模板。
+- [ ] `ALP-P0-005`：Demo Adapter 與 fallback。
+- [ ] 三門示範課：線性迴歸、SVM Kernel Trick、CWA OpenData。
+- [ ] 建立 `docs/km/AI_Learning_Portfolio_P0.md`。
+
+## 5. 下一個 Agent 的指令
+
+請依序閱讀：
+
+1. `AGENT.md`
+2. `docs/specs/AI_Learning_Portfolio_SPEC_v1_0.md`
+3. `docs/tasks/ALP-P0-001_to_005_platform_foundation.md`
+4. 本文件
+
+接著盤點目前 main 分支真實程式結構，完成 P0 任務。不要依賴舊 README 中可能過時的前後端路徑，不得刪除既有演算法、收藏、進度、測驗與 AI 助教功能。
+
+完成後：
+
+- 執行 lint、typecheck、test、build。
+- 更新本文件狀態與驗證證據。
+- 建立 KM 技術文件。
+- 建立 PR，列出架構決策、異動、測試結果、限制與下一步。
+
+---
+
+## 6. 歷史開發紀錄摘要
+
+截至 2026-06-09，原 ML Algorithm Tutor 已完成：
+
+- 十大演算法靜態資料與 API
+- 首頁、詳細頁、收藏、進度、綜合測驗
+- Tailwind UI 與互動動畫
+- AI 助教與 Gemini SDK 整合
+- AGENT / GEMINI 協作文件
+- 建置與基本驗證
+
+詳細歷史可由 Git commit 與 2026-07-15 前版本的本文件追溯。
