@@ -1,5 +1,14 @@
 # AI Learning Portfolio｜開發紀錄 (Development Record)
 
+## 2026-11-06｜舊獨立站詳情契約候選修補
+
+- Trello：https://trello.com/c/iHDbugqE 。本次僅修現有獨立站的摘要→詳情契約，未執行 ALP 平台整併或舊站退場。
+- 基底 `c457d8e3e348ba18368c8398dea1cbcc0fc1b9a3`；目前公開根路徑是 `main.py` 回傳 `web.html`，不是 `frontend/` 的 Next.js 頁面。
+- 實際 Chrome 重現：首頁 10 張卡正常，開啟詳情未呼叫 detail API，原理／用途／優缺點顯示 unavailable。
+- 候選修補：開啟時取得完整詳情、驗證資料、顯示原始繁體中文說明與 30 題測驗；提供載入／失敗／重試狀態，防止關閉後的舊回應覆蓋新項目，以文字節點安全渲染內容。另修正 Enter 開啟後的預設按鈕行為，避免對話框立刻被關閉。
+- 驗證：新增真實 FastAPI 契約 2 項 PASS、真實 Chrome 瀏覽器回歸 15 項 PASS，包含十項演算法全部欄位與測驗、503／不完整資料、回應競態、HTML 字串、390px 與鍵盤。修補前線性迴歸回歸測試先確認 FAIL。
+- 正式站仍保持原版本；未推送、建立 PR、merge 或部署。技術說明與重現指令見 `docs/km/legacy-detail-contract-20261106.md`。
+
 這份文件記錄專案開發進度，並作為 ChatGPT、Codex、Gemini、Antigravity、OpenCode 等 Agent 的交接文件。
 
 ## 中文摘要

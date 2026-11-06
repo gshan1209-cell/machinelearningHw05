@@ -1,0 +1,6 @@
+{
+  "name": "legacy-ml-detail-regression",
+  "private": true,
+  "scripts": { "test": "node --test detail-browser.test.cjs" },
+  "devDependencies": { "playwright": "1.65.0" }
+}

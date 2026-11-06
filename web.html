@@ -302,6 +302,9 @@
       <button class="close" id="close" aria-label="Close">&times;</button>
     </div>
     <div class="modal-body">
+      <p id="detail-status" role="status" aria-live="polite"></p>
+      <button id="detail-retry" type="button" hidden>Retry</button>
+      <div id="detail-notes" hidden>
       <p id="detail-summary" class="summary"></p>
       <h3 class="section-title">How It Works</h3>
       <ul id="detail-works"></ul>
@@ -311,6 +314,9 @@
       <ul id="detail-pros"></ul>
       <h3 class="section-title">Cons</h3>
       <ul id="detail-cons"></ul>
+      <h3 class="section-title">Quiz</h3>
+      <ol id="detail-quiz"></ol>
+      </div>
     </div>
   </dialog>
 
@@ -384,21 +390,90 @@
     function fillList(id, values) {
       const target = document.getElementById(id);
       const safeValues = values.length ? values : ["Study note unavailable"];
-      target.innerHTML = safeValues.map(v => `<li>${v}</li>`).join("");
+      target.replaceChildren(...safeValues.map(value => {
+        const item = document.createElement("li");
+        item.textContent = value;
+        return item;
+      }));
     }
 
-    function openDetail(slug) {
+    const detail = document.getElementById("detail");
+    let detailRequest = 0;
+    let activeDetailSlug = null;
+
+    function validDetail(item, slug) {
+      return item && item.slug === slug && typeof item.description === "string" && item.description.trim()
+        && ["how_it_works", "use_cases", "pros", "cons"].every(key =>
+          Array.isArray(item[key]) && item[key].length && item[key].every(value => typeof value === "string" && value.trim()))
+        && Array.isArray(item.quiz) && item.quiz.length && item.quiz.every(quiz =>
+          typeof quiz.question === "string" && quiz.question.trim()
+          && Array.isArray(quiz.options) && quiz.options.length
+          && quiz.options.every(option => typeof option === "string" && option.trim())
+          && quiz.options.includes(quiz.answer)
+          && typeof quiz.explanation === "string" && quiz.explanation.trim());
+    }
+
+    function fillQuiz(questions) {
+      document.getElementById("detail-quiz").replaceChildren(...questions.map(question => {
+        const entry = document.createElement("li");
+        const title = document.createElement("p");
+        title.textContent = question.question;
+        const options = document.createElement("ol");
+        options.replaceChildren(...question.options.map(option => {
+          const item = document.createElement("li");
+          item.textContent = option;
+          return item;
+        }));
+        const answer = document.createElement("details");
+        const toggle = document.createElement("summary");
+        toggle.textContent = "Show answer";
+        const explanation = document.createElement("p");
+        explanation.textContent = `${question.answer} — ${question.explanation}`;
+        answer.append(toggle, explanation);
+        entry.append(title, options, answer);
+        return entry;
+      }));
+    }
+
+    async function openDetail(slug) {
       const item = state.algorithms.find(a => a.slug === slug);
       if (!item) return;
+      const request = ++detailRequest;
+      activeDetailSlug = slug;
       document.getElementById("detail-title").textContent = item.name_en || clean(item.name_zh, "Algorithm");
       document.getElementById("detail-meta").textContent = `${clean(item.category, "Machine Learning")} · ${clean(item.difficulty, "Core")}`;
-      document.getElementById("detail-summary").textContent = fallbackSummary[item.slug] || clean(item.description, clean(item.one_liner, "Study note unavailable"));
-      fillList("detail-works", list(item.how_it_works));
-      fillList("detail-uses", list(item.use_cases));
-      fillList("detail-pros", list(item.pros));
-      fillList("detail-cons", list(item.cons));
-      document.getElementById("detail").showModal();
+      document.getElementById("detail-notes").hidden = true;
+      document.getElementById("detail-retry").hidden = true;
+      document.getElementById("detail-status").textContent = "Loading study notes…";
+      if (!detail.open) detail.showModal();
+      try {
+        const response = await fetch(`/api/algorithms/${encodeURIComponent(slug)}`);
+        if (!response.ok) throw new Error("Detail request failed");
+        const data = await response.json();
+        if (!validDetail(data, slug)) throw new Error("Incomplete study notes");
+        if (request !== detailRequest || !detail.open || activeDetailSlug !== slug) return;
+        document.getElementById("detail-summary").textContent = data.description;
+        fillList("detail-works", data.how_it_works);
+        fillList("detail-uses", data.use_cases);
+        fillList("detail-pros", data.pros);
+        fillList("detail-cons", data.cons);
+        fillQuiz(data.quiz);
+        document.getElementById("detail-status").textContent = "";
+        document.getElementById("detail-notes").hidden = false;
+      } catch {
+        if (request !== detailRequest || !detail.open || activeDetailSlug !== slug) return;
+        document.getElementById("detail-status").textContent = "Could not load complete study notes. Please retry.";
+        document.getElementById("detail-retry").hidden = false;
+      }
     }
+
+    detail.addEventListener("close", () => {
+      if (!detail.open) {
+        detailRequest++;
+        activeDetailSlug = null;
+      }
+    });
+    document.getElementById("detail-retry").addEventListener("click", () => openDetail(activeDetailSlug));
 
     document.getElementById("search").addEventListener("input", event => {
       state.search = event.target.value;
@@ -423,7 +498,10 @@
     grid.addEventListener("keydown", event => {
       if (event.key !== "Enter") return;
       const card = event.target.closest(".card");
-      if (card) openDetail(card.dataset.slug);
+      if (card) {
+        event.preventDefault();
+        openDetail(card.dataset.slug);
+      }
     });
 
     document.getElementById("close").addEventListener("click", () => document.getElementById("detail").close());
